@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets API Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .delete-btn {
+            background-color: #f44336;
+        }
+        .delete-btn:hover {
+            background-color: #da190b;
+        }
+        .search-btn {
+            background-color: #2196F3;
+        }
+        .search-btn:hover {
+            background-color: #0b7dda;
+        }
+        #result {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .data-table th {
+            background-color: #f2f2f2;
+        }
+        .error {
+            color: #f44336;
+        }
+        .success {
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>Google Sheets REST API - Example Usage</h1>
+    
+    <!-- Configuration -->
+    <div class="container">
+        <h2>Konfigurasi API</h2>
+        <div class="form-group">
+            <label for="apiUrl">URL Google Apps Script:</label>
+            <input type="url" id="apiUrl" placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec" 
+                   value="https://script.google.com/macros/s/AKfycbxw_ksKGO_v-XNA_X1MKvj4cqCRr1SQP4gDx4hMmjMhAQP1tD7QgCNTsnWraERDWE8h/exec">
+        </div>
+        <div class="form-group">
+            <label for="sheetName">Nama Sheet (opsional):</label>
+            <input type="text" id="sheetName" placeholder="Kosongkan untuk menggunakan sheet pertama">
+        </div>
+    </div>
+
+    <!-- Get All Data -->
+    <div class="container">
+        <h2>Ambil Semua Data</h2>
+        <button onclick="getAllData()">Ambil Semua Data</button>
+        <button onclick="getSheets()" class="search-btn">Lihat Daftar Sheet</button>
+    </div>
+
+    <!-- Search Data -->
+    <div class="container">
+        <h2>Cari Data</h2>
+        <div class="form-group">
+            <label for="searchQuery">Kata Kunci:</label>
+            <input type="text" id="searchQuery" placeholder="Masukkan kata kunci pencarian">
+        </div>
+        <button onclick="searchData()" class="search-btn">Cari Data</button>
+    </div>
+
+    <!-- Get Data by ID -->
+    <div class="container">
+        <h2>Ambil Data Berdasarkan ID</h2>
+        <div class="form-group">
+            <label for="dataId">ID Data:</label>
+            <input type="number" id="dataId" placeholder="Masukkan ID data" min="1">
+        </div>
+        <button onclick="getDataById()" class="search-btn">Ambil Data</button>
+    </div>
+
+    <!-- Add New Data -->
+    <div class="container">
+        <h2>Tambah Data Baru</h2>
+        <div class="form-group">
+            <label for="newData">Data Baru (pisahkan dengan koma):</label>
+            <textarea id="newData" rows="3" placeholder="contoh: Sofa Modern, Rp 3.500.000, Sofa 3 dudukan dengan desain minimalis"></textarea>
+        </div>
+        <button onclick="addData()">Tambah Data</button>
+    </div>
+
+    <!-- Update Data -->
+    <div class="container">
+        <h2>Update Data</h2>
+        <div class="form-group">
+            <label for="updateId">ID Data yang akan diupdate:</label>
+            <input type="number" id="updateId" placeholder="Masukkan ID data" min="1">
+        </div>
+        <div class="form-group">
+            <label for="updateData">Data Baru (pisahkan dengan koma):</label>
+            <textarea id="updateData" rows="3" placeholder="contoh: Sofa Modern Updated, Rp 4.000.000, Sofa 3 dudukan dengan desain minimalis terbaru"></textarea>
+        </div>
+        <button onclick="updateData()">Update Data</button>
+    </div>
+
+    <!-- Delete Data -->
+    <div class="container">
+        <h2>Hapus Data</h2>
+        <div class="form-group">
+            <label for="deleteId">ID Data yang akan dihapus:</label>
+            <input type="number" id="deleteId" placeholder="Masukkan ID data" min="1">
+        </div>
+        <button onclick="deleteData()" class="delete-btn">Hapus Data</button>
+    </div>
+
+    <!-- Result -->
+    <div class="container">
+        <h2>Hasil</h2>
+        <div id="result">Hasil akan ditampilkan di sini...</div>
+    </div>
+
+    <script>
+        function getApiUrl() {
+            return document.getElementById('apiUrl').value;
+        }
+
+        function getSheetName() {
+            return document.getElementById('sheetName').value;
+        }
+
+        function displayResult(data, isError = false) {
+            const resultDiv = document.getElementById('result');
+            
+            if (isError) {
+                resultDiv.innerHTML = `<span class="error">Error: ${data}</span>`;
+                return;
+            }
+
+            if (data.status === 'success') {
+                resultDiv.innerHTML = `<span class="success">✓ Success</span>\n\n${JSON.stringify(data, null, 2)}`;
+                
+                // Jika ada data array, tampilkan dalam bentuk tabel
+                if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+                    displayDataTable(data.data);
+                }
+            } else {
+                resultDiv.innerHTML = `<span class="error">✗ Error: ${data.message}</span>\n\n${JSON.stringify(data, null, 2)}`;
+            }
+        }
+
+        function displayDataTable(data) {
+            if (!data || data.length === 0) return;
+
+            const resultDiv = document.getElementById('result');
+            const keys = Object.keys(data[0]);
+            
+            let tableHtml = '<table class="data-table"><thead><tr>';
+            keys.forEach(key => {
+                tableHtml += `<th>${key}</th>`;
+            });
+            tableHtml += '</tr></thead><tbody>';
+            
+            data.forEach(row => {
+                tableHtml += '<tr>';
+                keys.forEach(key => {
+                    tableHtml += `<td>${row[key] || ''}</td>`;
+                });
+                tableHtml += '</tr>';
+            });
+            
+            tableHtml += '</tbody></table>';
+            resultDiv.innerHTML += tableHtml;
+        }
+
+        async function getAllData() {
+            try {
+                const url = getApiUrl();
+                const sheetName = getSheetName();
+                const params = new URLSearchParams();
+                
+                params.append('action', 'getAllData');
+                if (sheetName) {
+                    params.append('sheet', sheetName);
+                }
+                
+                const response = await fetch(`${url}?${params}`);
+                const data = await response.json();
+                displayResult(data);
+            } catch (error) {
+                displayResult(error.message, true);
+            }
+        }
+
+        async function getSheets() {
+            try {
+                const url = getApiUrl();
+                const params = new URLSearchParams();
+                params.append('action', 'getSheets');
+                
+                const response = await fetch(`${url}?${params}`);
+                const data = await response.json();
+                displayResult(data);
+            } catch (error) {
+                displayResult(error.message, true);
+            }
+        }
+
+        async function searchData() {
+            try {
+                const query = document.getElementById('searchQuery').value;
+                if (!query) {
+                    alert('Masukkan kata kunci pencarian');
+                    return;
+                }
+                
+                const url = getApiUrl();
+                const sheetName = getSheetName();
+                const params = new URLSearchParams();
+                
+                params.append('action', 'search');
+                params.append('query', query);
+                if (sheetName) {
+                    params.append('sheet', sheetName);
+                }
+                
+                const response = await fetch(`${url}?${params}`);
+                const data = await response.json();
+                displayResult(data);
+            } catch (error) {
+                displayResult(error.message, true);
+            }
+        }
+
+        async function getDataById() {
+            try {
+                const id = document.getElementById('dataId').value;
+                if (!id) {
+                    alert('Masukkan ID data');
+                    return;
+                }
+                
+                const url = getApiUrl();
+                const sheetName = getSheetName();
+                const params = new URLSearchParams();
+                
+                params.append('action', 'getById');
+                params.append('id', id);
+                if (sheetName) {
+                    params.append('sheet', sheetName);
+                }
+                
+                const response = await fetch(`${url}?${params}`);
+                const data = await response.json();
+                displayResult(data);
+            } catch (error) {
+                displayResult(error.message, true);
+            }
+        }
+
+        async function addData() {
+            try {
+                const newDataText = document.getElementById('newData').value;
+                if (!newDataText) {
+                    alert('Masukkan data baru');
+                    return;
+                }
+                
+                const rowData = newDataText.split(',').map(item => item.trim());
+                const url = getApiUrl();
+                const sheetName = getSheetName();
+                
+                const payload = {
+                    action: 'addData',
+                    rowData: rowData
+                };
+                
+                if (sheetName) {
+                    payload.sheet = sheetName;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                displayResult(data);
+            } catch (error) {
+                displayResult(error.message, true);
+            }
+        }
+
+        async function updateData() {
+            try {
+                const id = document.getElementById('updateId').value;
+                const updateDataText = document.getElementById('updateData').value;
+                
+                if (!id || !updateDataText) {
+                    alert('Masukkan ID dan data yang akan diupdate');
+                    return;
+                }
+                
+                const rowData = updateDataText.split(',').map(item => item.trim());
+                const url = getApiUrl();
+                const sheetName = getSheetName();
+                
+                const payload = {
+                    action: 'updateData',
+                    id: id,
+                    rowData: rowData
+                };
+                
+                if (sheetName) {
+                    payload.sheet = sheetName;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                displayResult(data);
+            } catch (error) {
+                displayResult(error.message, true);
+            }
+        }
+
+        async function deleteData() {
+            try {
+                const id = document.getElementById('deleteId').value;
+                if (!id) {
+                    alert('Masukkan ID data yang akan dihapus');
+                    return;
+                }
+                
+                if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                    return;
+                }
+                
+                const url = getApiUrl();
+                const sheetName = getSheetName();
+                
+                const payload = {
+                    action: 'deleteData',
+                    id: id
+                };
+                
+                if (sheetName) {
+                    payload.sheet = sheetName;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                displayResult(data);
+            } catch (error) {
+                displayResult(error.message, true);
+            }
+        }
+
+        // Load data saat halaman dimuat
+        window.onload = function() {
+            // Auto load data jika URL sudah diisi
+            const apiUrl = document.getElementById('apiUrl').value;
+            if (apiUrl && apiUrl.includes('script.google.com')) {
+                getAllData();
+            }
+        };
+    </script>
+</body>
+</html>
