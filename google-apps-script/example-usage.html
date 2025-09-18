@@ -10,7 +10,8 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, #10B981 0%, #3B82F6 100%);
+            min-height: 100vh;
         }
         .container {
             background: white;
@@ -18,6 +19,15 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
         }
         .form-group {
             margin-bottom: 15px;
@@ -35,7 +45,7 @@
             box-sizing: border-box;
         }
         button {
-            background-color: #4CAF50;
+            background-color: #10B981;
             color: white;
             padding: 10px 20px;
             border: none;
@@ -44,7 +54,7 @@
             margin-right: 10px;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #059669;
         }
         .delete-btn {
             background-color: #f44336;
@@ -53,10 +63,10 @@
             background-color: #da190b;
         }
         .search-btn {
-            background-color: #2196F3;
+            background-color: #3B82F6;
         }
         .search-btn:hover {
-            background-color: #0b7dda;
+            background-color: #2563EB;
         }
         #result {
             background-color: #f9f9f9;
@@ -84,12 +94,58 @@
             color: #f44336;
         }
         .success {
-            color: #4CAF50;
+            color: #10B981;
+        }
+        .furniture-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f9fafb;
+        }
+        .furniture-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            float: left;
+            margin-right: 15px;
+        }
+        .furniture-info {
+            overflow: hidden;
+        }
+        .furniture-name {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        .furniture-price {
+            color: #10B981;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        .furniture-category {
+            background: #3B82F6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        .furniture-description {
+            color: #6b7280;
+            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
-    <h1>Google Sheets REST API - Example Usage</h1>
+    <div class="header">
+        <h1>🪑 Wahena Furniture API</h1>
+        <p>Google Sheets REST API untuk Data Furniture</p>
+    </div>
     
     <!-- Configuration -->
     <div class="container">
@@ -107,63 +163,113 @@
 
     <!-- Get All Data -->
     <div class="container">
-        <h2>Ambil Semua Data</h2>
-        <button onclick="getAllData()">Ambil Semua Data</button>
+        <h2>📋 Ambil Semua Data Furniture</h2>
+        <button onclick="getAllData()">Ambil Semua Data Furniture</button>
         <button onclick="getSheets()" class="search-btn">Lihat Daftar Sheet</button>
+    </div>
+
+    <!-- Get by Category -->
+    <div class="container">
+        <h2>🏷️ Ambil Data Berdasarkan Kategori</h2>
+        <div class="form-group">
+            <label for="categoryQuery">Kategori:</label>
+            <select id="categoryQuery">
+                <option value="">Pilih Kategori</option>
+                <option value="sofa">Sofa</option>
+                <option value="tempat tidur">Tempat Tidur</option>
+                <option value="meja">Meja</option>
+                <option value="kursi">Kursi</option>
+                <option value="lemari">Lemari</option>
+                <option value="rak">Rak</option>
+            </select>
+        </div>
+        <button onclick="getByCategory()" class="search-btn">Ambil Data Kategori</button>
     </div>
 
     <!-- Search Data -->
     <div class="container">
-        <h2>Cari Data</h2>
+        <h2>🔍 Cari Data Furniture</h2>
         <div class="form-group">
             <label for="searchQuery">Kata Kunci:</label>
-            <input type="text" id="searchQuery" placeholder="Masukkan kata kunci pencarian">
+            <input type="text" id="searchQuery" placeholder="Masukkan kata kunci pencarian (contoh: sofa, king, ratu)">
         </div>
-        <button onclick="searchData()" class="search-btn">Cari Data</button>
+        <button onclick="searchData()" class="search-btn">Cari Furniture</button>
     </div>
 
     <!-- Get Data by ID -->
     <div class="container">
-        <h2>Ambil Data Berdasarkan ID</h2>
+        <h2>🆔 Ambil Data Berdasarkan ID</h2>
         <div class="form-group">
             <label for="dataId">ID Data:</label>
             <input type="number" id="dataId" placeholder="Masukkan ID data" min="1">
         </div>
-        <button onclick="getDataById()" class="search-btn">Ambil Data</button>
+        <button onclick="getDataById()" class="search-btn">Ambil Furniture</button>
     </div>
 
     <!-- Add New Data -->
     <div class="container">
-        <h2>Tambah Data Baru</h2>
+        <h2>➕ Tambah Furniture Baru</h2>
         <div class="form-group">
-            <label for="newData">Data Baru (pisahkan dengan koma):</label>
-            <textarea id="newData" rows="3" placeholder="contoh: Sofa Modern, Rp 3.500.000, Sofa 3 dudukan dengan desain minimalis"></textarea>
+            <label for="newProductName">Nama Produk:</label>
+            <input type="text" id="newProductName" placeholder="Contoh: Sofa Minimalis Modern">
         </div>
-        <button onclick="addData()">Tambah Data</button>
+        <div class="form-group">
+            <label for="newPrice">Harga (angka saja):</label>
+            <input type="number" id="newPrice" placeholder="Contoh: 3500000">
+        </div>
+        <div class="form-group">
+            <label for="newImage">URL Gambar:</label>
+            <input type="url" id="newImage" placeholder="https://images.unsplash.com/...">
+        </div>
+        <div class="form-group">
+            <label for="newCategory">Kategori:</label>
+            <input type="text" id="newCategory" placeholder="Contoh: Sofa, Meja, Kursi">
+        </div>
+        <div class="form-group">
+            <label for="newDescription">Deskripsi:</label>
+            <textarea id="newDescription" rows="3" placeholder="Deskripsi produk furniture"></textarea>
+        </div>
+        <button onclick="addFurniture()">Tambah Furniture</button>
     </div>
 
     <!-- Update Data -->
     <div class="container">
-        <h2>Update Data</h2>
+        <h2>✏️ Update Data Furniture</h2>
         <div class="form-group">
             <label for="updateId">ID Data yang akan diupdate:</label>
             <input type="number" id="updateId" placeholder="Masukkan ID data" min="1">
         </div>
         <div class="form-group">
-            <label for="updateData">Data Baru (pisahkan dengan koma):</label>
-            <textarea id="updateData" rows="3" placeholder="contoh: Sofa Modern Updated, Rp 4.000.000, Sofa 3 dudukan dengan desain minimalis terbaru"></textarea>
+            <label for="updateProductName">Nama Produk:</label>
+            <input type="text" id="updateProductName" placeholder="Nama produk baru">
         </div>
-        <button onclick="updateData()">Update Data</button>
+        <div class="form-group">
+            <label for="updatePrice">Harga (angka saja):</label>
+            <input type="number" id="updatePrice" placeholder="Harga baru">
+        </div>
+        <div class="form-group">
+            <label for="updateImage">URL Gambar:</label>
+            <input type="url" id="updateImage" placeholder="URL gambar baru">
+        </div>
+        <div class="form-group">
+            <label for="updateCategory">Kategori:</label>
+            <input type="text" id="updateCategory" placeholder="Kategori baru">
+        </div>
+        <div class="form-group">
+            <label for="updateDescription">Deskripsi:</label>
+            <textarea id="updateDescription" rows="3" placeholder="Deskripsi baru"></textarea>
+        </div>
+        <button onclick="updateFurniture()">Update Furniture</button>
     </div>
 
     <!-- Delete Data -->
     <div class="container">
-        <h2>Hapus Data</h2>
+        <h2>🗑️ Hapus Data Furniture</h2>
         <div class="form-group">
             <label for="deleteId">ID Data yang akan dihapus:</label>
             <input type="number" id="deleteId" placeholder="Masukkan ID data" min="1">
         </div>
-        <button onclick="deleteData()" class="delete-btn">Hapus Data</button>
+        <button onclick="deleteFurniture()" class="delete-btn">Hapus Furniture</button>
     </div>
 
     <!-- Result -->
@@ -192,9 +298,9 @@
             if (data.status === 'success') {
                 resultDiv.innerHTML = `<span class="success">✓ Success</span>\n\n${JSON.stringify(data, null, 2)}`;
                 
-                // Jika ada data array, tampilkan dalam bentuk tabel
+                // Jika ada data furniture array, tampilkan dalam bentuk card
                 if (data.data && Array.isArray(data.data) && data.data.length > 0) {
-                    displayDataTable(data.data);
+                    displayFurnitureCards(data.data);
                 }
             } else {
                 resultDiv.innerHTML = `<span class="error">✗ Error: ${data.message}</span>\n\n${JSON.stringify(data, null, 2)}`;
@@ -223,6 +329,57 @@
             
             tableHtml += '</tbody></table>';
             resultDiv.innerHTML += tableHtml;
+        }
+
+        function displayFurnitureCards(furnitureData) {
+            if (!furnitureData || furnitureData.length === 0) return;
+
+            const resultDiv = document.getElementById('result');
+            let cardsHtml = '<h3>📋 Data Furniture:</h3>';
+            
+            furnitureData.forEach(furniture => {
+                cardsHtml += `
+                    <div class="furniture-card">
+                        ${furniture.Image ? `<img src="${furniture.Image}" alt="${furniture['Product Name'] || 'Furniture'}" class="furniture-image" onerror="this.style.display='none'">` : ''}
+                        <div class="furniture-info">
+                            <div class="furniture-name">${furniture['Product Name'] || 'Nama tidak tersedia'}</div>
+                            <div class="furniture-price">${furniture.Price || 'Harga tidak tersedia'}</div>
+                            ${furniture.Category ? `<span class="furniture-category">${furniture.Category}</span>` : ''}
+                            <div class="furniture-description">${furniture.Description || 'Deskripsi tidak tersedia'}</div>
+                            <small style="color: #9ca3af;">ID: ${furniture.id || 'N/A'}</small>
+                        </div>
+                        <div style="clear: both;"></div>
+                    </div>
+                `;
+            });
+            
+            resultDiv.innerHTML += cardsHtml;
+        }
+
+        async function getByCategory() {
+            try {
+                const category = document.getElementById('categoryQuery').value;
+                if (!category) {
+                    alert('Pilih kategori terlebih dahulu');
+                    return;
+                }
+                
+                const url = getApiUrl();
+                const sheetName = getSheetName();
+                const params = new URLSearchParams();
+                
+                params.append('action', 'getByCategory');
+                params.append('category', category);
+                if (sheetName) {
+                    params.append('sheet', sheetName);
+                }
+                
+                const response = await fetch(`${url}?${params}`);
+                const data = await response.json();
+                displayResult(data);
+            } catch (error) {
+                displayResult(error.message, true);
+            }
         }
 
         async function getAllData() {
@@ -310,21 +467,31 @@
             }
         }
 
-        async function addData() {
+        async function addFurniture() {
             try {
-                const newDataText = document.getElementById('newData').value;
-                if (!newDataText) {
-                    alert('Masukkan data baru');
+                const productName = document.getElementById('newProductName').value;
+                const price = document.getElementById('newPrice').value;
+                const image = document.getElementById('newImage').value;
+                const category = document.getElementById('newCategory').value;
+                const description = document.getElementById('newDescription').value;
+                
+                if (!productName || !price) {
+                    alert('Nama produk dan harga wajib diisi');
                     return;
                 }
                 
-                const rowData = newDataText.split(',').map(item => item.trim());
                 const url = getApiUrl();
                 const sheetName = getSheetName();
                 
                 const payload = {
-                    action: 'addData',
-                    rowData: rowData
+                    action: 'addFurniture',
+                    furnitureData: {
+                        'Product Name': productName,
+                        'Price': parseInt(price),
+                        'Image': image,
+                        'Category': category,
+                        'Description': description
+                    }
                 };
                 
                 if (sheetName) {
@@ -346,24 +513,33 @@
             }
         }
 
-        async function updateData() {
+        async function updateFurniture() {
             try {
                 const id = document.getElementById('updateId').value;
-                const updateDataText = document.getElementById('updateData').value;
+                const productName = document.getElementById('updateProductName').value;
+                const price = document.getElementById('updatePrice').value;
+                const image = document.getElementById('updateImage').value;
+                const category = document.getElementById('updateCategory').value;
+                const description = document.getElementById('updateDescription').value;
                 
-                if (!id || !updateDataText) {
-                    alert('Masukkan ID dan data yang akan diupdate');
+                if (!id || !productName || !price) {
+                    alert('ID, nama produk, dan harga wajib diisi');
                     return;
                 }
                 
-                const rowData = updateDataText.split(',').map(item => item.trim());
                 const url = getApiUrl();
                 const sheetName = getSheetName();
                 
                 const payload = {
-                    action: 'updateData',
+                    action: 'updateFurniture',
                     id: id,
-                    rowData: rowData
+                    furnitureData: {
+                        'Product Name': productName,
+                        'Price': parseInt(price),
+                        'Image': image,
+                        'Category': category,
+                        'Description': description
+                    }
                 };
                 
                 if (sheetName) {
@@ -385,15 +561,15 @@
             }
         }
 
-        async function deleteData() {
+        async function deleteFurniture() {
             try {
                 const id = document.getElementById('deleteId').value;
                 if (!id) {
-                    alert('Masukkan ID data yang akan dihapus');
+                    alert('Masukkan ID furniture yang akan dihapus');
                     return;
                 }
                 
-                if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                if (!confirm('Apakah Anda yakin ingin menghapus furniture ini?')) {
                     return;
                 }
                 
@@ -401,7 +577,7 @@
                 const sheetName = getSheetName();
                 
                 const payload = {
-                    action: 'deleteData',
+                    action: 'deleteFurniture',
                     id: id
                 };
                 
@@ -426,7 +602,7 @@
 
         // Load data saat halaman dimuat
         window.onload = function() {
-            // Auto load data jika URL sudah diisi
+            // Auto load furniture data jika URL sudah diisi
             const apiUrl = document.getElementById('apiUrl').value;
             if (apiUrl && apiUrl.includes('script.google.com')) {
                 getAllData();

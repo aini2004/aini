@@ -1,6 +1,6 @@
-# Google Apps Script REST API untuk Google Sheets
+# Google Apps Script REST API untuk Wahena Furniture Store
 
-Script ini mengubah Google Sheets menjadi REST API yang dapat diakses secara publik.
+Script ini mengubah Google Sheets menjadi REST API khusus untuk data furniture yang dapat diakses secara publik.
 
 ## Setup
 
@@ -22,8 +22,8 @@ Script ini mengubah Google Sheets menjadi REST API yang dapat diakses secara pub
 #### 1. Ambil Semua Data
 ```
 GET https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec
-GET https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=getAllData
-GET https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=getAllData&sheet=SheetName
+GET https://script.google.com/macros/s/AKfycbxw_ksKGO_v-XNA_X1MKvj4cqCRr1SQP4gDx4hMmjMhAQP1tD7QgCNTsnWraERDWE8h/exec
+GET https://script.google.com/macros/s/AKfycbxw_ksKGO_v-XNA_X1MKvj4cqCRr1SQP4gDx4hMmjMhAQP1tD7QgCNTsnWraERDWE8h/exec?action=getAllData
 ```
 
 Response:
@@ -32,15 +32,27 @@ Response:
   "status": "success",
   "data": [
     {
-      "column1": "value1",
-      "column2": "value2",
-      "_id": 1,
+      "Product Name": "Sofa King",
+      "Price": "Rp3.500.000",
+      "Image": "https://images.unsplash.com/photo-1663756915304-40b7eda63e41?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "Category": "Sofa",
+      "Description": "Sofa mewah dengan desain modern dan nyaman",
+      "id": 1,
       "_rowNumber": 2
+    },
+    {
+      "Product Name": "Tempat Tidur Ratu Aini",
+      "Price": "Rp4.000.000",
+      "Image": "https://images.unsplash.com/photo-1758072328635-586f3c121af2?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "Category": "Tempat Tidur",
+      "Description": "Tempat tidur queen size dengan desain elegan",
+      "id": 2,
+      "_rowNumber": 3
     }
   ],
-  "count": 1,
+  "count": 2,
   "sheetName": "Sheet1",
-  "headers": ["column1", "column2"],
+  "headers": ["Product Name", "Price", "Image", "Category", "Description"],
   "timestamp": "2024-01-01T00:00:00.000Z"
 }
 ```
@@ -69,8 +81,7 @@ Response:
 
 #### 3. Ambil Data Berdasarkan ID
 ```
-GET https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=getById&id=1
-GET https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=getById&id=1&sheet=SheetName
+GET https://script.google.com/macros/s/AKfycbxw_ksKGO_v-XNA_X1MKvj4cqCRr1SQP4gDx4hMmjMhAQP1tD7QgCNTsnWraERDWE8h/exec?action=getById&id=1
 ```
 
 Response:
@@ -78,9 +89,12 @@ Response:
 {
   "status": "success",
   "data": {
-    "column1": "value1",
-    "column2": "value2",
-    "_id": 1,
+    "Product Name": "Sofa King",
+    "Price": "Rp3.500.000",
+    "Image": "https://images.unsplash.com/photo-1663756915304-40b7eda63e41?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "Category": "Sofa",
+    "Description": "Sofa mewah dengan desain modern dan nyaman",
+    "id": 1,
     "_rowNumber": 2
   },
   "timestamp": "2024-01-01T00:00:00.000Z"
@@ -89,8 +103,8 @@ Response:
 
 #### 4. Cari Data
 ```
-GET https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=search&query=searchterm
-GET https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=search&query=searchterm&sheet=SheetName
+GET https://script.google.com/macros/s/AKfycbxw_ksKGO_v-XNA_X1MKvj4cqCRr1SQP4gDx4hMmjMhAQP1tD7QgCNTsnWraERDWE8h/exec?action=search&query=sofa
+GET https://script.google.com/macros/s/AKfycbxw_ksKGO_v-XNA_X1MKvj4cqCRr1SQP4gDx4hMmjMhAQP1tD7QgCNTsnWraERDWE8h/exec?action=search&query=tempat%20tidur
 ```
 
 Response:
@@ -99,14 +113,43 @@ Response:
   "status": "success",
   "data": [
     {
-      "column1": "searchterm found here",
-      "column2": "value2",
-      "_id": 1,
+      "Product Name": "Sofa King",
+      "Price": "Rp3.500.000",
+      "Image": "https://images.unsplash.com/photo-1663756915304-40b7eda63e41?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "Category": "Sofa",
+      "Description": "Sofa mewah dengan desain modern dan nyaman",
+      "id": 1,
       "_rowNumber": 2
     }
   ],
   "count": 1,
-  "query": "searchterm",
+  "query": "sofa",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+#### 5. Ambil Data Berdasarkan Kategori
+```
+GET https://script.google.com/macros/s/AKfycbxw_ksKGO_v-XNA_X1MKvj4cqCRr1SQP4gDx4hMmjMhAQP1tD7QgCNTsnWraERDWE8h/exec?action=getByCategory&category=sofa
+```
+
+Response:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "Product Name": "Sofa King",
+      "Price": "Rp3.500.000",
+      "Image": "https://images.unsplash.com/photo-1663756915304-40b7eda63e41?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "Category": "Sofa",
+      "Description": "Sofa mewah dengan desain modern dan nyaman",
+      "id": 1,
+      "_rowNumber": 2
+    }
+  ],
+  "count": 1,
+  "category": "sofa",
   "timestamp": "2024-01-01T00:00:00.000Z"
 }
 ```
@@ -115,47 +158,57 @@ Response:
 
 #### 1. Tambah Data Baru
 ```
-POST https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec
+POST https://script.google.com/macros/s/AKfycbxw_ksKGO_v-XNA_X1MKvj4cqCRr1SQP4gDx4hMmjMhAQP1tD7QgCNTsnWraERDWE8h/exec
 Content-Type: application/json
 
 {
-  "action": "addData",
-  "sheet": "SheetName",
-  "rowData": ["value1", "value2", "value3"]
+  "action": "addFurniture",
+  "furnitureData": {
+    "Product Name": "Meja Makan Kayu Jati",
+    "Price": 5000000,
+    "Image": "https://images.unsplash.com/photo-furniture.jpg",
+    "Category": "Meja",
+    "Description": "Meja makan solid kayu jati untuk 6 orang"
+  }
 }
 ```
 
 #### 2. Update Data
 ```
-POST https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec
+POST https://script.google.com/macros/s/AKfycbxw_ksKGO_v-XNA_X1MKvj4cqCRr1SQP4gDx4hMmjMhAQP1tD7QgCNTsnWraERDWE8h/exec
 Content-Type: application/json
 
 {
-  "action": "updateData",
-  "sheet": "SheetName",
+  "action": "updateFurniture",
   "id": 1,
-  "rowData": ["newvalue1", "newvalue2", "newvalue3"]
+  "furnitureData": {
+    "Product Name": "Sofa King Updated",
+    "Price": 3800000,
+    "Image": "https://images.unsplash.com/photo-new-sofa.jpg",
+    "Category": "Sofa",
+    "Description": "Sofa mewah dengan desain modern dan sangat nyaman"
+  }
 }
 ```
 
 #### 3. Hapus Data
 ```
-POST https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec
+POST https://script.google.com/macros/s/AKfycbxw_ksKGO_v-XNA_X1MKvj4cqCRr1SQP4gDx4hMmjMhAQP1tD7QgCNTsnWraERDWE8h/exec
 Content-Type: application/json
 
 {
-  "action": "deleteData",
-  "sheet": "SheetName",
+  "action": "deleteFurniture",
   "id": 1
 }
 ```
 
 ## Parameter
 
-- `action`: Aksi yang ingin dilakukan (getAllData, getSheets, getById, search)
+- `action`: Aksi yang ingin dilakukan (getAllData, getSheets, getById, search, getByCategory)
 - `sheet`: Nama sheet (opsional, default menggunakan sheet pertama)
 - `id`: ID data (nomor baris - 1)
 - `query`: Kata kunci pencarian
+- `category`: Kategori furniture (sofa, meja, tempat tidur, dll)
 
 ## Error Response
 
@@ -170,30 +223,55 @@ Content-Type: application/json
 ## Contoh Penggunaan dengan JavaScript
 
 ```javascript
-// Ambil semua data
-fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec')
+// Ambil semua data furniture
+fetch('https://script.google.com/macros/s/AKfycbxw_ksKGO_v-XNA_X1MKvj4cqCRr1SQP4gDx4hMmjMhAQP1tD7QgCNTsnWraERDWE8h/exec')
   .then(response => response.json())
   .then(data => console.log(data));
 
-// Cari data
-fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=search&query=furniture')
+// Cari furniture berdasarkan nama
+fetch('https://script.google.com/macros/s/AKfycbxw_ksKGO_v-XNA_X1MKvj4cqCRr1SQP4gDx4hMmjMhAQP1tD7QgCNTsnWraERDWE8h/exec?action=search&query=sofa')
   .then(response => response.json())
   .then(data => console.log(data));
 
-// Tambah data baru
-fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+// Ambil furniture berdasarkan kategori
+fetch('https://script.google.com/macros/s/AKfycbxw_ksKGO_v-XNA_X1MKvj4cqCRr1SQP4gDx4hMmjMhAQP1tD7QgCNTsnWraERDWE8h/exec?action=getByCategory&category=tempat%20tidur')
+  .then(response => response.json())
+  .then(data => console.log(data));
+
+// Tambah furniture baru
+fetch('https://script.google.com/macros/s/AKfycbxw_ksKGO_v-XNA_X1MKvj4cqCRr1SQP4gDx4hMmjMhAQP1tD7QgCNTsnWraERDWE8h/exec', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    action: 'addData',
-    rowData: ['Sofa Baru', 'Rp 2.500.000', 'Sofa minimalis modern']
+    action: 'addFurniture',
+    furnitureData: {
+      'Product Name': 'Kursi Kantor Ergonomis',
+      'Price': 1500000,
+      'Image': 'https://images.unsplash.com/photo-office-chair.jpg',
+      'Category': 'Kursi',
+      'Description': 'Kursi kantor dengan sandaran punggung ergonomis'
+    }
   })
 })
 .then(response => response.json())
 .then(data => console.log(data));
 ```
+
+## Format Data yang Diharapkan
+
+Google Sheets harus memiliki struktur kolom sebagai berikut:
+
+| Product Name | Price | Image | Category | Description |
+|--------------|-------|-------|----------|-------------|
+| Sofa King | 3500000 | https://images.unsplash.com/... | Sofa | Sofa mewah dengan desain modern |
+| Tempat Tidur Ratu Aini | 4000000 | https://images.unsplash.com/... | Tempat Tidur | Tempat tidur queen size |
+
+**Catatan Penting:**
+- Kolom `Price` akan otomatis diformat menjadi format Rupiah (Rp3.500.000)
+- Baris pertama harus berisi header kolom
+- URL gambar harus valid dan dapat diakses publik
 
 ## Keamanan
 
@@ -210,7 +288,12 @@ fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
 
 ## Catatan
 
-- Baris pertama di sheet akan dianggap sebagai header
+- Baris pertama di sheet akan dianggap sebagai header (Product Name, Price, Image, dll)
 - ID dimulai dari 1 (baris kedua dalam sheet)
+- Harga akan otomatis diformat dalam format Rupiah Indonesia
 - Maksimal 6 menit execution time untuk Google Apps Script
 - Rate limit: 100 requests per 100 seconds per user
+
+## Sample Data
+
+Untuk membuat sample data furniture, jalankan fungsi `createSampleFurnitureData()` di Google Apps Script Editor.

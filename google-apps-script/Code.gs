@@ -1,6 +1,6 @@
 /**
- * Google Apps Script REST API untuk Google Sheets
- * Mengambil data dari spreadsheet aktif dan menyediakannya sebagai API
+ * Google Apps Script REST API untuk Google Sheets - Wahena Furniture
+ * Mengambil data furniture dari spreadsheet dan menyediakannya sebagai API
  */
 
 // Fungsi utama untuk menangani HTTP GET requests
@@ -19,27 +19,31 @@ function doGet(e) {
     
     switch (action) {
       case 'getAllData':
-        result = getAllData(spreadsheet, sheet);
+        result = getAllFurnitureData(spreadsheet, sheet);
         break;
       case 'getSheets':
         result = getSheetNames(spreadsheet);
         break;
       case 'getById':
-        result = getDataById(spreadsheet, sheet, id);
+        result = getFurnitureById(spreadsheet, sheet, id);
         break;
       case 'search':
         const query = params.query || '';
-        result = searchData(spreadsheet, sheet, query);
+        result = searchFurniture(spreadsheet, sheet, query);
+        break;
+      case 'getByCategory':
+        const category = params.category || '';
+        result = getFurnitureByCategory(spreadsheet, sheet, category);
         break;
       default:
         result = {
           status: 'error',
           message: 'Invalid action parameter',
-          availableActions: ['getAllData', 'getSheets', 'getById', 'search']
+          availableActions: ['getAllData', 'getSheets', 'getById', 'search', 'getByCategory']
         };
     }
     
-    // Return JSON response
+    // Return JSON response dengan CORS headers
     return ContentService
       .createTextOutput(JSON.stringify(result))
       .setMimeType(ContentService.MimeType.JSON);
@@ -67,14 +71,14 @@ function doPost(e) {
     let result;
     
     switch (action) {
-      case 'addData':
-        result = addData(spreadsheet, sheetName, data.rowData);
+      case 'addFurniture':
+        result = addFurnitureData(spreadsheet, sheetName, data.furnitureData);
         break;
-      case 'updateData':
-        result = updateData(spreadsheet, sheetName, data.id, data.rowData);
+      case 'updateFurniture':
+        result = updateFurnitureData(spreadsheet, sheetName, data.id, data.furnitureData);
         break;
-      case 'deleteData':
-        result = deleteData(spreadsheet, sheetName, data.id);
+      case 'deleteFurniture':
+        result = deleteFurnitureData(spreadsheet, sheetName, data.id);
         break;
       default:
         result = {
@@ -99,9 +103,9 @@ function doPost(e) {
 }
 
 /**
- * Mengambil semua data dari sheet tertentu atau sheet pertama
+ * Mengambil semua data furniture dari sheet
  */
-function getAllData(spreadsheet, sheetName = null) {
+function getAllFurnitureData(spreadsheet, sheetName = null) {
   try {
     let sheet;
     
@@ -131,24 +135,42 @@ function getAllData(spreadsheet, sheetName = null) {
     
     // Baris pertama sebagai header
     const headers = values[0];
-    const data = [];
+    const furnitureData = [];
     
-    // Konversi data ke format object
+    // Konversi data ke format furniture object
     for (let i = 1; i < values.length; i++) {
-      const row = {};
+      const furniture = {};
+      
       for (let j = 0; j < headers.length; j++) {
-        row[headers[j]] = values[i][j];
+        const header = headers[j];
+        let value = values[i][j];
+        
+        // Format khusus untuk harga
+        if (header.toLowerCase().includes('price') || header.toLowerCase().includes('harga')) {
+          // Jika value adalah number, format sebagai currency Indonesia
+          if (typeof value === 'number') {
+            value = formatRupiah(value);
+          } else if (typeof value === 'string' && !isNaN(value.replace(/[^\d]/g, ''))) {
+            // Jika string berisi angka, format ulang
+            const numValue = parseInt(value.replace(/[^\d]/g, ''));
+            value = formatRupiah(numValue);
+          }
+        }
+        
+        furniture[header] = value;
       }
+      
       // Tambahkan ID berdasarkan nomor baris
-      row._id = i;
-      row._rowNumber = i + 1;
-      data.push(row);
+      furniture.id = i;
+      furniture._rowNumber = i + 1;
+      
+      furnitureData.push(furniture);
     }
     
     return {
       status: 'success',
-      data: data,
-      count: data.length,
+      data: furnitureData,
+      count: furnitureData.length,
       sheetName: sheet.getName(),
       headers: headers,
       timestamp: new Date().toISOString()
@@ -160,6 +182,18 @@ function getAllData(spreadsheet, sheetName = null) {
       message: error.toString()
     };
   }
+}
+
+/**
+ * Format angka menjadi format Rupiah
+ */
+function formatRupiah(amount) {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
 }
 
 /**
@@ -191,9 +225,9 @@ function getSheetNames(spreadsheet) {
 }
 
 /**
- * Mengambil data berdasarkan ID (nomor baris)
+ * Mengambil data furniture berdasarkan ID
  */
-function getDataById(spreadsheet, sheetName, id) {
+function getFurnitureById(spreadsheet, sheetName, id) {
   try {
     if (!id) {
       return {
@@ -202,24 +236,24 @@ function getDataById(spreadsheet, sheetName, id) {
       };
     }
     
-    const allData = getAllData(spreadsheet, sheetName);
+    const allData = getAllFurnitureData(spreadsheet, sheetName);
     
     if (allData.status === 'error') {
       return allData;
     }
     
-    const item = allData.data.find(row => row._id == id);
+    const furniture = allData.data.find(item => item.id == id);
     
-    if (!item) {
+    if (!furniture) {
       return {
         status: 'error',
-        message: `Data with ID ${id} not found`
+        message: `Furniture with ID ${id} not found`
       };
     }
     
     return {
       status: 'success',
-      data: item,
+      data: furniture,
       timestamp: new Date().toISOString()
     };
     
@@ -232,9 +266,9 @@ function getDataById(spreadsheet, sheetName, id) {
 }
 
 /**
- * Mencari data berdasarkan query
+ * Mencari furniture berdasarkan query
  */
-function searchData(spreadsheet, sheetName, query) {
+function searchFurniture(spreadsheet, sheetName, query) {
   try {
     if (!query) {
       return {
@@ -243,14 +277,14 @@ function searchData(spreadsheet, sheetName, query) {
       };
     }
     
-    const allData = getAllData(spreadsheet, sheetName);
+    const allData = getAllFurnitureData(spreadsheet, sheetName);
     
     if (allData.status === 'error') {
       return allData;
     }
     
-    const searchResults = allData.data.filter(row => {
-      return Object.values(row).some(value => 
+    const searchResults = allData.data.filter(furniture => {
+      return Object.values(furniture).some(value => 
         String(value).toLowerCase().includes(query.toLowerCase())
       );
     });
@@ -272,14 +306,57 @@ function searchData(spreadsheet, sheetName, query) {
 }
 
 /**
- * Menambah data baru ke sheet
+ * Mengambil furniture berdasarkan kategori
  */
-function addData(spreadsheet, sheetName, rowData) {
+function getFurnitureByCategory(spreadsheet, sheetName, category) {
   try {
-    if (!rowData || !Array.isArray(rowData)) {
+    if (!category) {
       return {
         status: 'error',
-        message: 'rowData must be an array'
+        message: 'Category parameter is required'
+      };
+    }
+    
+    const allData = getAllFurnitureData(spreadsheet, sheetName);
+    
+    if (allData.status === 'error') {
+      return allData;
+    }
+    
+    const categoryResults = allData.data.filter(furniture => {
+      // Cari di field yang mungkin berisi kategori
+      const categoryFields = ['category', 'kategori', 'type', 'jenis'];
+      return categoryFields.some(field => 
+        furniture[field] && 
+        String(furniture[field]).toLowerCase().includes(category.toLowerCase())
+      );
+    });
+    
+    return {
+      status: 'success',
+      data: categoryResults,
+      count: categoryResults.length,
+      category: category,
+      timestamp: new Date().toISOString()
+    };
+    
+  } catch (error) {
+    return {
+      status: 'error',
+      message: error.toString()
+    };
+  }
+}
+
+/**
+ * Menambah data furniture baru
+ */
+function addFurnitureData(spreadsheet, sheetName, furnitureData) {
+  try {
+    if (!furnitureData || typeof furnitureData !== 'object') {
+      return {
+        status: 'error',
+        message: 'furnitureData must be an object'
       };
     }
     
@@ -296,6 +373,15 @@ function addData(spreadsheet, sheetName, rowData) {
       sheet = spreadsheet.getSheets()[0];
     }
     
+    // Ambil header untuk menentukan urutan kolom
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const rowData = [];
+    
+    // Susun data sesuai urutan header
+    headers.forEach(header => {
+      rowData.push(furnitureData[header] || '');
+    });
+    
     const lastRow = sheet.getLastRow();
     const newRow = lastRow + 1;
     
@@ -304,9 +390,9 @@ function addData(spreadsheet, sheetName, rowData) {
     
     return {
       status: 'success',
-      message: 'Data added successfully',
+      message: 'Furniture data added successfully',
       newRowNumber: newRow,
-      data: rowData,
+      data: furnitureData,
       timestamp: new Date().toISOString()
     };
     
@@ -319,14 +405,14 @@ function addData(spreadsheet, sheetName, rowData) {
 }
 
 /**
- * Update data berdasarkan ID
+ * Update data furniture berdasarkan ID
  */
-function updateData(spreadsheet, sheetName, id, rowData) {
+function updateFurnitureData(spreadsheet, sheetName, id, furnitureData) {
   try {
-    if (!id || !rowData || !Array.isArray(rowData)) {
+    if (!id || !furnitureData || typeof furnitureData !== 'object') {
       return {
         status: 'error',
-        message: 'ID and rowData (array) are required'
+        message: 'ID and furnitureData (object) are required'
       };
     }
     
@@ -352,14 +438,23 @@ function updateData(spreadsheet, sheetName, id, rowData) {
       };
     }
     
+    // Ambil header untuk menentukan urutan kolom
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const rowData = [];
+    
+    // Susun data sesuai urutan header
+    headers.forEach(header => {
+      rowData.push(furnitureData[header] || '');
+    });
+    
     // Update data
     sheet.getRange(rowNumber, 1, 1, rowData.length).setValues([rowData]);
     
     return {
       status: 'success',
-      message: 'Data updated successfully',
+      message: 'Furniture data updated successfully',
       rowNumber: rowNumber,
-      data: rowData,
+      data: furnitureData,
       timestamp: new Date().toISOString()
     };
     
@@ -372,9 +467,9 @@ function updateData(spreadsheet, sheetName, id, rowData) {
 }
 
 /**
- * Hapus data berdasarkan ID
+ * Hapus data furniture berdasarkan ID
  */
-function deleteData(spreadsheet, sheetName, id) {
+function deleteFurnitureData(spreadsheet, sheetName, id) {
   try {
     if (!id) {
       return {
@@ -410,7 +505,7 @@ function deleteData(spreadsheet, sheetName, id) {
     
     return {
       status: 'success',
-      message: 'Data deleted successfully',
+      message: 'Furniture data deleted successfully',
       deletedRowNumber: rowNumber,
       timestamp: new Date().toISOString()
     };
@@ -426,14 +521,58 @@ function deleteData(spreadsheet, sheetName, id) {
 /**
  * Fungsi helper untuk testing
  */
-function testAPI() {
+function testFurnitureAPI() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   
-  // Test getAllData
-  console.log('Testing getAllData:');
-  console.log(getAllData(spreadsheet));
+  // Test getAllFurnitureData
+  console.log('Testing getAllFurnitureData:');
+  console.log(getAllFurnitureData(spreadsheet));
   
-  // Test getSheetNames
-  console.log('Testing getSheetNames:');
-  console.log(getSheetNames(spreadsheet));
+  // Test searchFurniture
+  console.log('Testing searchFurniture:');
+  console.log(searchFurniture(spreadsheet, null, 'sofa'));
+}
+
+/**
+ * Fungsi untuk membuat sample data furniture (untuk testing)
+ */
+function createSampleFurnitureData() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = spreadsheet.getSheets()[0];
+  
+  // Header
+  const headers = ['Product Name', 'Price', 'Image', 'Category', 'Description'];
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  
+  // Sample data
+  const sampleData = [
+    [
+      'Sofa King',
+      3500000,
+      'https://images.unsplash.com/photo-1663756915304-40b7eda63e41?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      'Sofa',
+      'Sofa mewah dengan desain modern dan nyaman'
+    ],
+    [
+      'Tempat Tidur Ratu Aini',
+      4000000,
+      'https://images.unsplash.com/photo-1758072328635-586f3c121af2?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      'Tempat Tidur',
+      'Tempat tidur queen size dengan desain elegan'
+    ],
+    [
+      'Rak Buku Aesthetic',
+      2000000,
+      'https://images.unsplash.com/photo-1660224319984-4af12c1a469b?q=80&w=627&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      'Rak',
+      'Rak buku dengan desain aesthetic dan minimalis'
+    ]
+  ];
+  
+  sheet.getRange(2, 1, sampleData.length, headers.length).setValues(sampleData);
+  
+  return {
+    status: 'success',
+    message: 'Sample furniture data created successfully'
+  };
 }
